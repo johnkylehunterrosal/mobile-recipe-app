@@ -4,7 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import HomeScreen from '../screens/HomeScreen';
 import AddRecipeScreen from '../screens/AddRecipeScreen';
-import FavouriteRecipeScreen from '../screens/FavouriteReciepScreen';
+import FavouriteRecipeScreen from '../screens/FavouriteRecipeScreen';
 import EditRecipeScreen from '../screens/EditRecipeScreen';
 import { Ionicons } from 'react-native-vector-icons';
 

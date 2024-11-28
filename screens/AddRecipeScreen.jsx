@@ -83,8 +83,13 @@ const AddRecipeScreen = () => {
 
   const clickSaveRecipe = () => {
     if (!validateInputs()) return;
-    setRecipeLists((prevState) => [...prevState, recipe]);
+    const newRecipe = {
+      ...recipe,
+      id: recipe.id + 1,
+    };
+    setRecipeLists((prevState) => [...prevState, newRecipe]);
     setRecipe({
+      id: recipe.id + 1,
       recipeName: "",
       imageUrl: "",
       shortDescription: "",
@@ -95,6 +100,7 @@ const AddRecipeScreen = () => {
     setIngredient({ id: 1, description: "" });
     navigation.navigate("Recipe Lists");
   };
+  
 
   return (
     <ScrollView style={styles.container}>

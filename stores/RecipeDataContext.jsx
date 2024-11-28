@@ -5,6 +5,7 @@ const RecipeContext = createContext();
 const RecipeProvider = ({ children }) => {
     const [recipeLists, setRecipeLists] = useState([])
     const [recipe, setRecipe] = useState({
+      id : 0,
       recipeName: "",
       imageUrl: "",
       shortDescription: "",
