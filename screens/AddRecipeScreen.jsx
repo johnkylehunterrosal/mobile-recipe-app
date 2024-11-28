@@ -1,11 +1,11 @@
 import { useState, useContext } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { RecipeContext } from "../stores/RecipeDataContext";
-import { View, Text, StyleSheet, TextInput, Button, ScrollView } from "react-native";
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Alert } from "react-native";
 
 const AddRecipeScreen = () => {
   const { recipe, setRecipe, setRecipeLists } = useContext(RecipeContext);
-  const navigation = useNavigation(); // Navigation hook
+  const navigation = useNavigation();
   const [instruction, setInstruction] = useState({
     id: 1,
     description: "",
@@ -14,44 +14,76 @@ const AddRecipeScreen = () => {
     id: 1,
     description: "",
   });
+  const [errors, setErrors] = useState({}); // Validation errors
+
+  const validateInputs = () => {
+    let newErrors = {};
+    if (!recipe.recipeName) newErrors.recipeName = "Recipe Name is required.";
+    if (!recipe.imageUrl) newErrors.imageUrl = "Image URL is required.";
+    if (!recipe.shortDescription) newErrors.shortDescription = "Short Description is required.";
+    if (recipe.instructions.length === 0) newErrors.instructions = "At least one instruction is required.";
+    if (recipe.ingredients.length === 0) newErrors.ingredients = "At least one ingredient is required.";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0; // Return true if no errors
+  };
 
   const handleRecipeName = (e) => {
     const newRecipeName = e.nativeEvent.text;
     setRecipe((prevState) => ({ ...prevState, recipeName: newRecipeName }));
+    if (newRecipeName) setErrors((prev) => ({ ...prev, recipeName: null }));
   };
+
   const handleRecipeImg = (e) => {
     const newImgUrl = e.nativeEvent.text;
     setRecipe((prevState) => ({ ...prevState, imageUrl: newImgUrl }));
+    if (newImgUrl) setErrors((prev) => ({ ...prev, imageUrl: null }));
   };
+
   const handleShortDescription = (e) => {
     const newShortDescription = e.nativeEvent.text;
     setRecipe((prevState) => ({ ...prevState, shortDescription: newShortDescription }));
+    if (newShortDescription) setErrors((prev) => ({ ...prev, shortDescription: null }));
   };
+
   const handleInstruction = (e) => {
     const newInstruction = e.nativeEvent.text;
     setInstruction((prevState) => ({ ...prevState, description: newInstruction }));
   };
+
   const handleIngredient = (e) => {
     const newIngredient = e.nativeEvent.text;
     setIngredient((prevState) => ({ ...prevState, description: newIngredient }));
   };
+
   const clickAddInstruction = () => {
+    if (!instruction.description.trim()) {
+      Alert.alert("Validation Error", "Instruction cannot be empty.");
+      return;
+    }
     setRecipe((prevState) => ({
       ...prevState,
       instructions: prevState.instructions.concat(instruction),
     }));
     setInstruction({ id: instruction.id + 1, description: "" });
+    setErrors((prev) => ({ ...prev, instructions: null }));
   };
+
   const clickAddIngredient = () => {
+    if (!ingredient.description.trim()) {
+      Alert.alert("Validation Error", "Ingredient cannot be empty.");
+      return;
+    }
     setRecipe((prevState) => ({
       ...prevState,
       ingredients: prevState.ingredients.concat(ingredient),
     }));
     setIngredient({ id: ingredient.id + 1, description: "" });
+    setErrors((prev) => ({ ...prev, ingredients: null }));
   };
+
   const clickSaveRecipe = () => {
+    if (!validateInputs()) return;
     setRecipeLists((prevState) => [...prevState, recipe]);
-    // Reset inputs
     setRecipe({
       recipeName: "",
       imageUrl: "",
@@ -61,23 +93,34 @@ const AddRecipeScreen = () => {
     });
     setInstruction({ id: 1, description: "" });
     setIngredient({ id: 1, description: "" });
-    // Redirect to Home Screen
     navigation.navigate("Recipe Lists");
   };
 
   return (
     <ScrollView style={styles.container}>
-      <Text>{JSON.stringify(recipe)}</Text>
-      <Text>{JSON.stringify(instruction)}</Text>
-      <Text>{JSON.stringify(ingredient)}</Text>
       <Text>Recipe Name:</Text>
-      <TextInput style={styles.inputWrapper} value={recipe.recipeName} onChange={handleRecipeName} />
+      <TextInput
+        style={styles.inputWrapper}
+        value={recipe.recipeName}
+        onChange={handleRecipeName}
+      />
+      {errors.recipeName && <Text style={styles.errorText}>{errors.recipeName}</Text>}
 
       <Text>Image URL:</Text>
-      <TextInput style={styles.inputWrapper} value={recipe.imageUrl} onChange={handleRecipeImg} />
+      <TextInput
+        style={styles.inputWrapper}
+        value={recipe.imageUrl}
+        onChange={handleRecipeImg}
+      />
+      {errors.imageUrl && <Text style={styles.errorText}>{errors.imageUrl}</Text>}
 
       <Text>Short Description:</Text>
-      <TextInput style={styles.inputWrapper} value={recipe.shortDescription} onChange={handleShortDescription} />
+      <TextInput
+        style={styles.inputWrapper}
+        value={recipe.shortDescription}
+        onChange={handleShortDescription}
+      />
+      {errors.shortDescription && <Text style={styles.errorText}>{errors.shortDescription}</Text>}
 
       <Text>Instructions:</Text>
       <TextInput
@@ -86,7 +129,10 @@ const AddRecipeScreen = () => {
         value={instruction.description}
         onChange={handleInstruction}
       />
-      <Button title="Add Instruction" onPress={clickAddInstruction} />
+      <TouchableOpacity style={styles.buttonPink} onPress={clickAddInstruction}>
+        <Text style={styles.buttonText}>Add Instruction</Text>
+      </TouchableOpacity>
+      {errors.instructions && <Text style={styles.errorText}>{errors.instructions}</Text>}
 
       <Text>Ingredients:</Text>
       <TextInput
@@ -95,9 +141,14 @@ const AddRecipeScreen = () => {
         value={ingredient.description}
         onChange={handleIngredient}
       />
-      <Button title="Add Ingredient" onPress={clickAddIngredient} />
+      <TouchableOpacity style={styles.buttonPink} onPress={clickAddIngredient}>
+        <Text style={styles.buttonText}>Add Ingredient</Text>
+      </TouchableOpacity>
+      {errors.ingredients && <Text style={styles.errorText}>{errors.ingredients}</Text>}
 
-      <Button style={styles.buttonWrapper} title="Save Recipe" onPress={clickSaveRecipe} />
+      <TouchableOpacity style={styles.buttonPink} onPress={clickSaveRecipe}>
+        <Text style={styles.buttonText}>Save Recipe</Text>
+      </TouchableOpacity>
     </ScrollView>
   );
 };
@@ -114,8 +165,23 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: 10,
   },
-  buttonWrapper: {
-    margin: 10,
+  buttonPink: {
+    backgroundColor: "#ff69b4",
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    marginTop: 10,
+    alignItems: "center",
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  errorText: {
+    color: "red",
+    marginBottom: 10,
+    fontSize: 14,
   },
 });
 
